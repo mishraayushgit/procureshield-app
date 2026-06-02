@@ -1,6 +1,6 @@
 """
-ProcureShield AI
-Fresh Streamlit SaaS application for connected procurement fraud intelligence.
+ProcureShield Procurement Governance
+Streamlit application for procurement governance and vendor risk controls.
 
 Run:
     streamlit run procureshield_ai.py
@@ -8,7 +8,10 @@ Run:
 
 from __future__ import annotations
 
+import base64
+import mimetypes
 from datetime import datetime, timedelta
+from pathlib import Path
 from textwrap import dedent
 from typing import Dict, List, Tuple
 
@@ -22,7 +25,7 @@ from sklearn.preprocessing import MinMaxScaler
 
 
 st.set_page_config(
-    page_title="ProcureShield AI",
+    page_title="ProcureShield Procurement Governance",
     page_icon="PS",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -30,19 +33,20 @@ st.set_page_config(
 
 
 APP_NAME = "ProcureShield"
-APP_SUBTITLE = "AI PLATFORM"
+APP_SUBTITLE = "PROCUREMENT OPERATIONS"
+APP_DIR = Path(__file__).resolve().parent
 
 C = {
-    "bg": "#07111f",
-    "bg2": "#0b1728",
-    "sidebar": "#0d1a31",
-    "sidebar2": "#142447",
-    "panel": "rgba(17, 31, 55, 0.82)",
-    "panel2": "rgba(22, 39, 70, 0.70)",
-    "line": "rgba(132, 179, 207, 0.18)",
-    "muted": "#8fa4bd",
-    "text": "#eef7ff",
-    "soft": "#c4d4e6",
+    "bg": "#f5f7fa",
+    "bg2": "#ffffff",
+    "sidebar": "#ffffff",
+    "sidebar2": "#f8fafc",
+    "panel": "#ffffff",
+    "panel2": "#ffffff",
+    "line": "#d1d5db",
+    "muted": "#6b7280",
+    "text": "#111827",
+    "soft": "#4b5563",
     "teal": "#12d6c5",
     "teal2": "#28f2d2",
     "blue": "#57a6ff",
@@ -57,7 +61,7 @@ PAGES = [
     ("MAIN", "Transaction Feed", "TF"),
     ("MAIN", "Vendor Intelligence", "VI"),
     ("ANALYTICS", "Risk Reports", "RR"),
-    ("ANALYTICS", "AI Monitoring Center", "AI"),
+    ("ANALYTICS", "Risk & Compliance Monitoring", "RC"),
     ("SETTINGS", "Audit Logs", "AL"),
     ("SETTINGS", "Configuration", "CF"),
 ]
@@ -70,6 +74,23 @@ CATEGORIES = ["Software", "Consulting", "Logistics", "Hardware", "Office", "Trav
 def html_fragment(markup: str) -> str:
     """Keep Streamlit markdown from treating indented HTML as code blocks."""
     return "\n".join(line.strip() for line in dedent(markup).strip().splitlines() if line.strip())
+
+
+def platform_logo_data_uri() -> str:
+    """Use the supplied transparent logo when present, with a restrained fallback."""
+    for filename in ("project_logo.png", "project_logo.svg", "logo.png", "logo.svg"):
+        logo = APP_DIR / filename
+        if logo.exists():
+            mime = mimetypes.guess_type(logo.name)[0] or "image/png"
+            payload = base64.b64encode(logo.read_bytes()).decode("ascii")
+            return f"data:{mime};base64,{payload}"
+    fallback = """
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+      <path fill="#155f9d" d="M32 4 55 13v16c0 14-9 25-23 31C18 54 9 43 9 29V13z"/>
+      <path fill="#fff" d="m20 31 8 8 17-18 4 4-21 22-12-12z"/>
+    </svg>
+    """
+    return "data:image/svg+xml;base64," + base64.b64encode(fallback.encode("utf-8")).decode("ascii")
 
 
 def render_html(markup: str, target=st) -> None:
@@ -278,10 +299,7 @@ def inject_css() -> None:
         }}
 
         .stApp {{
-            background:
-                radial-gradient(circle at 12% 8%, rgba(18,214,197,0.16), transparent 34%),
-                radial-gradient(circle at 84% 4%, rgba(87,166,255,0.12), transparent 31%),
-                linear-gradient(135deg, #060c16 0%, #081324 52%, #0b1728 100%) !important;
+            background: #f5f7fa !important;
             color: var(--text);
         }}
 
@@ -291,10 +309,9 @@ def inject_css() -> None:
             min-width: 340px !important;
             max-width: 340px !important;
             width: 340px !important;
-            background:
-                linear-gradient(180deg, rgba(15,29,55,0.98), rgba(19,35,68,0.98) 58%, rgba(10,20,39,0.98)) !important;
+            background: #ffffff !important;
             border-right: 1px solid rgba(100, 154, 193, 0.20);
-            box-shadow: 24px 0 80px rgba(0,0,0,0.30);
+            box-shadow: none;
         }}
 
         [data-testid="stSidebar"] > div:first-child {{
@@ -308,14 +325,14 @@ def inject_css() -> None:
 
         ::-webkit-scrollbar {{ width: 7px; height: 7px; }}
         ::-webkit-scrollbar-thumb {{ background: rgba(18,214,197,0.55); border-radius: 999px; }}
-        ::-webkit-scrollbar-track {{ background: rgba(255,255,255,0.04); }}
+        ::-webkit-scrollbar-track {{ background: #f3f4f6; }}
 
         .brand-wrap {{
             display: flex;
             align-items: center;
             gap: 14px;
             padding: 18px 14px 24px 14px;
-            border-bottom: 1px solid rgba(255,255,255,0.09);
+            border-bottom: 1px solid #d1d5db;
             margin-bottom: 18px;
         }}
         .brand-mark {{
@@ -324,17 +341,17 @@ def inject_css() -> None:
             border-radius: 16px;
             display: grid;
             place-items: center;
-            color: #eaffff;
+            color: #111827;
             font-weight: 900;
             letter-spacing: -0.06em;
             background: linear-gradient(135deg, #13dfc5, #2875ff);
-            box-shadow: 0 0 34px rgba(18,214,197,0.34), inset 0 1px 0 rgba(255,255,255,0.42);
+            box-shadow: none;
         }}
-        .brand-title {{ font-size: 19px; font-weight: 900; color: #f6fbff; line-height: 1.05; }}
-        .brand-sub {{ font-size: 11px; font-weight: 800; color: #b6c7dc; letter-spacing: 0.18em; margin-top: 4px; }}
+        .brand-title {{ font-size: 19px; font-weight: 900; color: #000000; line-height: 1.05; }}
+        .brand-sub {{ font-size: 11px; font-weight: 800; color: #6b7280; letter-spacing: 0.18em; margin-top: 4px; }}
 
         .nav-section {{
-            color: #d3e3f5;
+            color: #6b7280;
             font-size: 11px;
             font-weight: 900;
             letter-spacing: 0.18em;
@@ -348,7 +365,7 @@ def inject_css() -> None:
             min-height: 50px;
             padding: 0 16px;
             border-radius: 13px;
-            color: #c9d6e8 !important;
+            color: #374151 !important;
             margin: 5px 0;
             font-size: 15px;
             font-weight: 700;
@@ -356,15 +373,15 @@ def inject_css() -> None:
             transition: all 170ms ease;
         }}
         .nav-item:hover {{
-            color: #ffffff !important;
-            background: rgba(255,255,255,0.065);
-            border-color: rgba(255,255,255,0.08);
+            color: #111827 !important;
+            background: #f3f4f6;
+            border-color: #d1d5db;
         }}
         .nav-item.active {{
-            color: #8dfff2 !important;
+            color: #0f4c81 !important;
             background: linear-gradient(135deg, rgba(18,214,197,0.19), rgba(87,166,255,0.12));
             border-color: rgba(18,214,197,0.26);
-            box-shadow: 0 0 22px rgba(18,214,197,0.16), inset 0 1px 0 rgba(255,255,255,0.08);
+            box-shadow: none;
         }}
         .nav-dot {{
             width: 8px;
@@ -379,7 +396,7 @@ def inject_css() -> None:
         }}
         .nav-code {{
             margin-left: auto;
-            color: rgba(225,239,255,0.44);
+            color: #6b7280;
             font-size: 11px;
             font-weight: 900;
         }}
@@ -398,33 +415,33 @@ def inject_css() -> None:
             text-align: left !important;
             box-shadow: none !important;
             transition: all 170ms ease !important;
-            background: rgba(255,255,255,0.025) !important;
+            background: #ffffff !important;
             border: 1px solid transparent !important;
-            color: #c9d6e8 !important;
+            color: #374151 !important;
         }}
         [data-testid="stSidebar"] .stButton > button:hover {{
-            color: #ffffff !important;
-            background: rgba(255,255,255,0.075) !important;
-            border-color: rgba(255,255,255,0.10) !important;
+            color: #111827 !important;
+            background: #f3f4f6 !important;
+            border-color: #d1d5db !important;
             transform: translateY(-1px);
         }}
         [data-testid="stSidebar"] .stButton > button[kind="primary"] {{
-            color: #8dfff2 !important;
+            color: #0f4c81 !important;
             background: linear-gradient(135deg, rgba(18,214,197,0.19), rgba(87,166,255,0.12)) !important;
             border-color: rgba(18,214,197,0.30) !important;
-            box-shadow: 0 0 22px rgba(18,214,197,0.16), inset 0 1px 0 rgba(255,255,255,0.08) !important;
+            box-shadow: none !important;
         }}
 
         .portfolio-card, .side-action {{
             margin-top: 22px;
             padding: 20px;
             border-radius: 15px;
-            background: rgba(255,255,255,0.055);
-            border: 1px solid rgba(255,255,255,0.11);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.07);
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            box-shadow: none;
         }}
         .portfolio-title {{
-            color: #d8e6f9;
+            color: #374151;
             font-size: 12px;
             font-weight: 900;
             letter-spacing: 0.13em;
@@ -433,9 +450,9 @@ def inject_css() -> None:
         .stat-row {{
             display: flex;
             justify-content: space-between;
-            color: #dce9fb;
+            color: #374151;
             padding: 9px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.07);
+            border-bottom: 1px solid #d1d5db;
             font-size: 14px;
         }}
         .stat-row:last-child {{ border-bottom: 0; }}
@@ -456,9 +473,9 @@ def inject_css() -> None:
             padding: 14px 16px;
             margin-bottom: 30px;
             border-radius: 18px;
-            background: rgba(17,31,55,0.68);
+            background: #ffffff;
             border: 1px solid rgba(132,179,207,0.17);
-            box-shadow: 0 18px 55px rgba(0,0,0,0.24), inset 0 1px 0 rgba(255,255,255,0.06);
+            box-shadow: 0 1px 3px rgba(16,24,40,0.06);
             backdrop-filter: blur(20px);
         }}
         .page-kicker {{
@@ -468,7 +485,7 @@ def inject_css() -> None:
             letter-spacing: 0.17em;
         }}
         .page-title {{
-            color: #f4faff;
+            color: #000000;
             font-size: 25px;
             font-weight: 900;
             line-height: 1.1;
@@ -480,14 +497,14 @@ def inject_css() -> None:
             align-items: center;
             border-radius: 999px;
             border: 1px solid rgba(132,179,207,0.16);
-            background: rgba(5,12,25,0.42);
-            color: #c9d9ec;
+            background: #f8fafc;
+            color: #4b5563;
             padding: 0 16px;
             font-weight: 700;
             font-size: 13px;
             white-space: nowrap;
         }}
-        .search-pill {{ color: #8197b2; }}
+        .search-pill {{ color: #4b5563; }}
         .status-light {{
             width: 9px;
             height: 9px;
@@ -498,21 +515,21 @@ def inject_css() -> None:
         }}
 
         .section-title {{
-            color: #eff7ff;
+            color: #000000;
             font-size: 19px;
             font-weight: 900;
             letter-spacing: -0.01em;
             margin: 4px 0 6px 0;
         }}
         .section-subtitle {{
-            color: #8fa4bd;
+            color: #4b5563;
             font-size: 13px;
             line-height: 1.48;
             font-weight: 650;
             margin: 0 0 20px 0;
         }}
         .micro-label {{
-            color: #8ca2bc;
+            color: #6b7280;
             font-size: 11px;
             font-weight: 900;
             letter-spacing: 0.14em;
@@ -523,27 +540,21 @@ def inject_css() -> None:
             border: 1px solid rgba(132,179,207,0.18);
             border-radius: 22px;
             padding: 26px;
-            box-shadow: 0 22px 64px rgba(0,0,0,0.23), inset 0 1px 0 rgba(255,255,255,0.055);
+            box-shadow: 0 1px 3px rgba(16,24,40,0.06);
             backdrop-filter: blur(22px);
             margin-bottom: 26px;
         }}
         .panel.anomaly {{
             padding: 30px;
-            background:
-                radial-gradient(circle at 10% 0%, rgba(18,214,197,0.18), transparent 34%),
-                radial-gradient(circle at 88% 20%, rgba(139,124,255,0.15), transparent 32%),
-                rgba(17,31,55,0.88);
+            background: #ffffff;
             border-color: rgba(18,214,197,0.24);
-            box-shadow: 0 28px 86px rgba(0,0,0,0.30), 0 0 38px rgba(18,214,197,0.08), inset 0 1px 0 rgba(255,255,255,0.07);
+            box-shadow: 0 1px 3px rgba(16,24,40,0.06);
         }}
         .hero {{
             overflow: hidden;
             position: relative;
             min-height: 312px;
-            background:
-                radial-gradient(circle at 18% 0%, rgba(18,214,197,0.25), transparent 32%),
-                radial-gradient(circle at 100% 0%, rgba(139,124,255,0.18), transparent 38%),
-                linear-gradient(145deg, rgba(15,29,55,0.95), rgba(8,18,35,0.91));
+            background: #ffffff;
         }}
         .hero:after {{
             content: "";
@@ -566,12 +577,12 @@ def inject_css() -> None:
             font-size: 82px;
             font-weight: 950;
             letter-spacing: -0.07em;
-            color: #f6fbff;
+            color: #111827;
             line-height: 0.95;
             margin: 13px 0 7px 0;
         }}
         .hero-sub {{
-            color: #a9bbd2;
+            color: #4b5563;
             font-size: 14px;
             font-weight: 650;
             line-height: 1.55;
@@ -587,7 +598,7 @@ def inject_css() -> None:
             font-weight: 900;
             background: rgba(18,214,197,0.11);
             border: 1px solid rgba(18,214,197,0.24);
-            color: #9dfff4;
+            color: #0f4c81;
         }}
         .kpi-grid {{
             display: grid;
@@ -600,9 +611,9 @@ def inject_css() -> None:
             min-height: 126px;
             padding: 19px;
             border-radius: 18px;
-            background: rgba(17,31,55,0.76);
+            background: #ffffff;
             border: 1px solid rgba(132,179,207,0.17);
-            box-shadow: 0 16px 44px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.05);
+            box-shadow: 0 1px 3px rgba(16,24,40,0.06);
             overflow: hidden;
         }}
         .kpi:after {{
@@ -616,21 +627,21 @@ def inject_css() -> None:
             background: radial-gradient(circle, rgba(18,214,197,0.18), transparent 62%);
         }}
         .kpi-label {{
-            color: #8fa4bd;
+            color: #374151;
             font-size: 12px;
             font-weight: 850;
             letter-spacing: 0.09em;
             text-transform: uppercase;
         }}
         .kpi-value {{
-            color: #f5fbff;
+            color: #111827;
             font-size: 30px;
             font-weight: 920;
             margin-top: 13px;
             letter-spacing: -0.04em;
         }}
         .kpi-delta {{
-            color: #aebed2;
+            color: #6b7280;
             font-size: 12px;
             font-weight: 750;
             margin-top: 8px;
@@ -642,30 +653,30 @@ def inject_css() -> None:
             gap: 10px;
             padding: 13px 0;
             border-bottom: 1px solid rgba(132,179,207,0.11);
-            color: #dce9f8;
+            color: #374151;
             font-size: 14px;
             font-weight: 700;
         }}
         .metric-row:last-child {{ border-bottom: 0; }}
-        .metric-row span:last-child {{ color: #f8fcff; font-weight: 900; }}
+        .metric-row span:last-child {{ color: #111827; font-weight: 800; }}
 
         .alert {{
             padding: 16px;
             border-radius: 15px;
             margin-bottom: 13px;
-            background: rgba(255,255,255,0.045);
+            background: #ffffff;
             border: 1px solid rgba(132,179,207,0.15);
         }}
         .alert-head {{
             display: flex;
             justify-content: space-between;
             gap: 10px;
-            color: #f3f9ff;
+            color: #111827;
             font-weight: 900;
             font-size: 13px;
         }}
         .alert-copy {{
-            color: #9eafc5;
+            color: #4b5563;
             font-size: 12px;
             line-height: 1.45;
             margin-top: 5px;
@@ -673,20 +684,20 @@ def inject_css() -> None:
 
         .stTextInput input, .stNumberInput input, .stSelectbox [data-baseweb="select"] {{
             border-radius: 13px !important;
-            border: 1px solid rgba(132,179,207,0.18) !important;
-            background: rgba(5,12,25,0.62) !important;
-            color: #eff7ff !important;
+            border: 1px solid #d1d5db !important;
+            background: #ffffff !important;
+            color: #111827 !important;
             min-height: 44px;
         }}
         .stTextInput label, .stNumberInput label, .stSelectbox label, .stSlider label {{
-            color: #c7d7ea !important;
+            color: #374151 !important;
             font-weight: 800 !important;
         }}
         .stButton > button {{
             min-height: 46px;
             border-radius: 14px !important;
             border: 1px solid rgba(18,214,197,0.30) !important;
-            color: #efffff !important;
+            color: #ffffff !important;
             background: linear-gradient(135deg, rgba(18,214,197,0.88), rgba(31,133,255,0.92)) !important;
             font-weight: 900 !important;
             box-shadow: 0 15px 32px rgba(18,214,197,0.16);
@@ -712,11 +723,11 @@ def inject_css() -> None:
         .briefing-card {{
             padding: 18px;
             border-radius: 17px;
-            background: rgba(255,255,255,0.045);
+            background: #ffffff;
             border: 1px solid rgba(132,179,207,0.14);
         }}
         .briefing-title {{
-            color: #eaf5ff;
+            color: #000000;
             font-size: 13px;
             font-weight: 900;
             letter-spacing: 0.08em;
@@ -724,7 +735,7 @@ def inject_css() -> None:
             margin-bottom: 8px;
         }}
         .briefing-copy {{
-            color: #a9bad0;
+            color: #4b5563;
             font-size: 13px;
             line-height: 1.55;
             font-weight: 650;
@@ -745,6 +756,424 @@ def inject_css() -> None:
             .main .block-container {{ padding: 18px 16px 36px 16px; }}
             .kpi-grid {{ grid-template-columns: 1fr; }}
             .hero-score {{ font-size: 60px; }}
+        }}
+
+        /* Enterprise procurement theme */
+        :root {{
+            --bg: #f5f7fa;
+            --panel: #ffffff;
+            --line: #d9e0e8;
+            --text: #1f2937;
+            --muted: #667085;
+            --teal: #1769aa;
+        }}
+        .stApp {{ background: #f5f7fa !important; color: #1f2937; }}
+        [data-testid="stSidebar"] {{
+            background: #ffffff !important;
+            border-right: 1px solid #d9e0e8;
+            box-shadow: none;
+        }}
+        .brand-wrap {{ border-bottom-color: #e5e9ef; }}
+        .brand-mark {{
+            width:58px; height:58px; padding:7px; border-radius:10px;
+            display:flex; align-items:center; justify-content:center;
+            background:#ffffff; border:1px solid #d9e0e8; box-shadow:0 1px 3px rgba(16,24,40,.08);
+        }}
+        .brand-mark img {{ width:100%; height:100%; object-fit:contain; display:block; }}
+        .brand-title, .section-title, .page-title {{ color: #172b4d; }}
+        .brand-sub, .nav-section, .section-subtitle, .micro-label {{ color: #667085; }}
+        [data-testid="stSidebar"] .stButton > button {{
+            border-radius: 6px !important;
+            color: #344054 !important;
+            background: transparent !important;
+        }}
+        [data-testid="stSidebar"] .stButton > button:hover {{
+            color: #145a91 !important;
+            background: #eef6fd !important;
+            border-color: #d2e6f6 !important;
+            transform: none;
+        }}
+        [data-testid="stSidebar"] .stButton > button[kind="primary"] {{
+            color: #145a91 !important;
+            background: #e8f3fc !important;
+            border-color: #c8e1f4 !important;
+            box-shadow: none !important;
+        }}
+        .portfolio-card {{
+            border-radius: 6px;
+            background: #f8fafc;
+            border: 1px solid #e1e7ef;
+            box-shadow: none;
+        }}
+        .portfolio-title, .stat-row {{ color: #475467; }}
+        .stat-row {{ border-bottom-color: #e5e9ef; }}
+        .side-action {{ display: none; }}
+        .topbar {{
+            border-radius: 8px;
+            background: #ffffff;
+            border: 1px solid #d9e0e8;
+            box-shadow: 0 1px 3px rgba(16,24,40,0.06);
+            backdrop-filter: none;
+        }}
+        .page-kicker {{ color: #1769aa; }}
+        .search-pill, .status-pill, .time-pill {{
+            border-radius: 6px;
+            border-color: #d9e0e8;
+            background: #f8fafc;
+            color: #667085;
+        }}
+        .status-light {{ background: #2e7d32; box-shadow: none; }}
+        .panel {{
+            border-radius: 8px;
+            background: #ffffff;
+            border: 1px solid #d9e0e8;
+            box-shadow: 0 1px 3px rgba(16,24,40,0.06);
+            backdrop-filter: none;
+            padding: 20px;
+            margin-bottom: 18px;
+        }}
+        .kpi {{ border-radius: 8px; background: #ffffff; border-color: #d9e0e8; box-shadow: none; }}
+        .kpi:after {{ display: none; }}
+        .kpi-label, .kpi-delta {{ color: #667085; }}
+        .kpi-value {{ color: #172b4d; }}
+        .panel.anomaly {{ background: #ffffff; border-color: #d9e0e8; box-shadow: 0 1px 3px rgba(16,24,40,0.06); }}
+        .stTextInput input, .stNumberInput input, .stSelectbox [data-baseweb="select"] {{
+            border-radius: 5px !important;
+            border-color: #cfd8e3 !important;
+            background: #ffffff !important;
+            color: #1f2937 !important;
+            min-height: 40px;
+        }}
+        .stTextInput label, .stNumberInput label, .stSelectbox label, .stDateInput label {{
+            color: #344054 !important;
+            font-size: 13px !important;
+            font-weight: 700 !important;
+        }}
+        .stDateInput input, .stTextInput input, .stNumberInput input {{
+            background:#ffffff !important; color:#1f2937 !important; border-color:#cfd8e3 !important;
+        }}
+        .stSelectbox [data-baseweb="select"] > div {{
+            background:#ffffff !important; color:#1f2937 !important; border-color:#cfd8e3 !important;
+        }}
+        .stSelectbox svg {{ fill:#667085 !important; }}
+        .stNumberInput button {{ background:#f8fafc !important; color:#344054 !important; border-color:#cfd8e3 !important; }}
+        .stButton > button {{
+            border-radius: 5px !important;
+            border: 1px solid #1769aa !important;
+            color: #111827 !important;
+            background: #1769aa !important;
+            box-shadow: none;
+        }}
+        .stButton > button:hover {{ background: #145a91 !important; box-shadow: none; transform: none; }}
+        .workflow-head {{
+            display:flex; justify-content:space-between; align-items:center; gap:18px;
+            padding:20px 22px; margin-bottom:18px; border:1px solid #d9e0e8;
+            border-radius:8px; background:#ffffff; box-shadow:0 1px 3px rgba(16,24,40,.06);
+        }}
+        .workflow-title {{ color:#172b4d; font-size:22px; font-weight:800; }}
+        .workflow-sub {{ color:#667085; font-size:13px; margin-top:5px; }}
+        .workflow-meta {{ display:flex; gap:10px; align-items:center; color:#667085; font-size:12px; font-weight:700; }}
+        .chip {{
+            display:inline-flex; align-items:center; gap:6px; padding:4px 9px;
+            border-radius:999px; font-size:11px; font-weight:800; border:1px solid transparent;
+        }}
+        .chip.pending {{ color:#9a6700; background:#fff8e1; border-color:#f4d88b; }}
+        .chip.good {{ color:#256029; background:#edf7ed; border-color:#b7d9b9; }}
+        .chip.warn {{ color:#9a3412; background:#fff3e8; border-color:#f3c49e; }}
+        .chip.info {{ color:#145a91; background:#eef6fd; border-color:#c8e1f4; }}
+        .card-title {{ color:#172b4d; font-size:14px; font-weight:800; margin-bottom:3px; }}
+        .card-note {{ color:#667085; font-size:12px; line-height:1.45; margin-bottom:14px; }}
+        .context-strip {{
+            display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:10px;
+            padding:12px; margin-bottom:14px; background:#f8fafc; border:1px solid #e1e7ef; border-radius:6px;
+        }}
+        .context-label {{ color:#667085; font-size:10px; font-weight:800; letter-spacing:.08em; }}
+        .context-value {{ color:#1f2937; font-size:13px; font-weight:800; margin-top:3px; }}
+        .check-row {{ display:flex; justify-content:space-between; gap:10px; padding:10px 0; border-bottom:1px solid #edf0f4; color:#475467; font-size:13px; }}
+        .check-row:last-child {{ border-bottom:0; }}
+        .check-row strong {{ color:#172b4d; }}
+        .attachment-box {{ padding:16px; text-align:center; color:#667085; font-size:12px; border:1px dashed #aebdcd; border-radius:6px; background:#fbfcfd; }}
+        .contract-link {{ color:#1769aa; font-weight:700; text-decoration:none; }}
+        .sidebar-score {{ display:flex; align-items:baseline; gap:5px; padding:6px 0 14px; color:#172b4d; font-size:36px; font-weight:800; }}
+        .sidebar-score span {{ color:#667085; font-size:13px; font-weight:700; }}
+        .metric-row {{ color:#475467; border-bottom-color:#edf0f4; }}
+        .metric-row span:last-child {{ color:#172b4d; }}
+        .alert {{ background:#fbfcfd; border-color:#e1e7ef; border-radius:6px; }}
+        .alert-head {{ color:#172b4d; }}
+        .alert-copy {{ color:#667085; }}
+        .briefing-card {{ background:#fbfcfd; border-color:#e1e7ef; border-radius:6px; }}
+        .briefing-title {{ color:#172b4d; }}
+        .briefing-copy {{ color:#475467; }}
+        [data-testid="stDataFrame"] {{ border-radius:6px; border-color:#d9e0e8; }}
+        [data-testid="stFileUploader"] section {{ background:#fbfcfd; border-color:#aebdcd; }}
+        .executive-grid {{
+            display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:10px; margin:0 0 18px;
+        }}
+        .executive-card {{
+            min-height:84px; padding:13px 12px; border:1px solid #d9e0e8; border-radius:6px;
+            background:#ffffff; box-shadow:0 1px 2px rgba(16,24,40,.04);
+        }}
+        .executive-label {{ color:#667085; font-size:10px; font-weight:800; letter-spacing:.07em; text-transform:uppercase; line-height:1.35; }}
+        .executive-value {{ color:#172b4d; font-size:16px; font-weight:800; margin-top:10px; }}
+        @media (max-width: 1250px) {{ .executive-grid {{ grid-template-columns:repeat(4,minmax(0,1fr)); }} }}
+        @media (max-width: 760px) {{ .executive-grid {{ grid-template-columns:repeat(2,minmax(0,1fr)); }} }}
+
+        /* WCAG AA high-contrast layer */
+        :root {{
+            --text: #111827;
+            --heading: #000000;
+            --label: #374151;
+            --secondary: #4b5563;
+            --metadata: #6b7280;
+            --line: #d1d5db;
+        }}
+        .stApp, .main, .main p, .main li, .main span, .main div {{
+            color: var(--text);
+        }}
+        .panel, .kpi, .workflow-head, .executive-card, .briefing-card, .portfolio-card,
+        .context-strip, .attachment-box, .topbar {{
+            border-color: var(--line);
+        }}
+        .brand-title, .page-title, .section-title, .workflow-title, .card-title,
+        .briefing-title, .sidebar-score, .kpi-value, .executive-value {{
+            color: var(--heading) !important;
+        }}
+        .section-subtitle, .workflow-sub, .card-note, .briefing-copy, .alert-copy,
+        .attachment-box, .sidebar-score span {{
+            color: var(--secondary) !important;
+        }}
+        .brand-sub, .nav-section, .micro-label, .kpi-delta, .context-label,
+        .workflow-meta, .executive-label, .search-pill, .status-pill, .time-pill {{
+            color: var(--metadata) !important;
+        }}
+        .kpi-label, .context-value, .check-row, .stat-row, .portfolio-title,
+        .alert-head {{
+            color: var(--label) !important;
+        }}
+        .metric-row {{
+            color: var(--label) !important;
+            border-bottom-color: var(--line) !important;
+            font-weight:600 !important;
+        }}
+        .metric-row span:first-child {{ color:var(--label) !important; font-weight:600 !important; }}
+        .metric-row span:last-child, .metric-row strong {{ color:var(--text) !important; font-weight:800 !important; }}
+        .check-row span:first-child {{ color:var(--label) !important; font-weight:600 !important; }}
+        .check-row strong {{ color:var(--text) !important; font-weight:800 !important; }}
+        [data-testid="stSidebar"], [data-testid="stSidebar"] * {{
+            color:var(--text);
+        }}
+        [data-testid="stSidebar"] .stButton > button {{
+            color:var(--label) !important;
+            font-weight:700 !important;
+        }}
+        [data-testid="stSidebar"] .stButton > button[kind="primary"] {{
+            color:#0f4c81 !important;
+        }}
+        .stTextInput label, .stNumberInput label, .stSelectbox label, .stDateInput label,
+        .stSlider label, .stFileUploader label {{
+            color:var(--label) !important;
+            font-weight:700 !important;
+        }}
+        .stTextInput input, .stNumberInput input, .stDateInput input,
+        .stSelectbox [data-baseweb="select"], .stSelectbox [data-baseweb="select"] *,
+        [data-baseweb="popover"] *, [role="option"] {{
+            color:var(--text) !important;
+        }}
+        [data-testid="stFileUploader"] *, [data-testid="stFileUploaderDropzone"] * {{
+            color:var(--label) !important;
+        }}
+        [data-testid="stDataFrame"], [data-testid="stDataFrame"] * {{
+            color:var(--text) !important;
+            --gdg-text-dark: #111827;
+            --gdg-text-medium: #374151;
+            --gdg-text-light: #4b5563;
+            --gdg-border-color: #d1d5db;
+            --gdg-header-text: #111827;
+            --gdg-header-background: #f3f4f6;
+            --gdg-bg-cell: #ffffff;
+            --gdg-bg-header: #f3f4f6;
+        }}
+        [data-testid="stDataFrame"] {{ border-color:var(--line) !important; }}
+        [data-testid="stDataFrame"] button {{ color:var(--label) !important; }}
+
+        /* White enterprise dropdowns, comboboxes, autocomplete and multiselect menus */
+        .stSelectbox [data-baseweb="select"],
+        .stMultiSelect [data-baseweb="select"],
+        [role="combobox"] {{
+            background:#ffffff !important; color:#111827 !important;
+            border-color:#d1d5db !important; border-radius:6px !important;
+            transition:border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease !important;
+        }}
+        .stSelectbox [data-baseweb="select"]:focus-within,
+        .stMultiSelect [data-baseweb="select"]:focus-within,
+        [role="combobox"]:focus-within {{
+            border-color:#1769aa !important;
+            box-shadow:0 0 0 3px rgba(23,105,170,.14) !important;
+        }}
+        .stSelectbox [data-baseweb="select"] *,
+        .stMultiSelect [data-baseweb="select"] *,
+        [role="combobox"] * {{
+            color:#111827 !important;
+        }}
+        [data-baseweb="popover"]:not([data-baseweb="tooltip"]),
+        [data-baseweb="popover"]:not([data-baseweb="tooltip"]) > div,
+        [data-baseweb="menu"],
+        [role="listbox"],
+        [role="menu"] {{
+            background:#ffffff !important; color:#111827 !important;
+            border-color:#d1d5db !important;
+        }}
+        [data-baseweb="popover"]:not([data-baseweb="tooltip"]) {{
+            border:1px solid #d1d5db !important; border-radius:8px !important;
+            box-shadow:0 10px 24px rgba(17,24,39,.12) !important;
+            overflow:hidden !important;
+        }}
+        [role="option"], [data-baseweb="menu"] li, [role="menuitem"] {{
+            background:#ffffff !important; color:#111827 !important;
+            transition:background-color 140ms ease, color 140ms ease !important;
+        }}
+        [role="option"] *, [data-baseweb="menu"] li *, [role="menuitem"] * {{
+            color:#111827 !important;
+        }}
+        [role="option"]:hover, [role="option"]:focus, [role="option"][aria-highlighted="true"],
+        [role="option"][data-highlighted="true"],
+        [data-baseweb="menu"] li:hover, [role="menuitem"]:hover {{
+            background:#f3f4f6 !important; color:#111827 !important;
+        }}
+        [role="option"][aria-selected="true"],
+        [data-baseweb="menu"] li[aria-selected="true"],
+        [role="menuitem"][aria-selected="true"] {{
+            background:#e5e7eb !important; color:#111827 !important; font-weight:700 !important;
+        }}
+        [data-baseweb="tag"] {{
+            background:#e5e7eb !important; border:1px solid #d1d5db !important;
+            color:#111827 !important;
+        }}
+        [data-baseweb="tag"] * {{ color:#111827 !important; }}
+        [data-baseweb="popover"]:not([data-baseweb="tooltip"]) input {{
+            background:#ffffff !important; color:#111827 !important; border-color:#d1d5db !important;
+        }}
+        [data-baseweb="popover"]:not([data-baseweb="tooltip"]) small,
+        [data-baseweb="popover"]:not([data-baseweb="tooltip"]) [class*="caption"] {{
+            color:#4b5563 !important;
+        }}
+
+        /* Compact enterprise navigation rail */
+        section[data-testid="stSidebar"] {{
+            min-width:92px !important; max-width:92px !important; width:92px !important;
+            flex:0 0 92px !important; overflow:visible !important; transform:none !important;
+        }}
+        [data-testid="stSidebarHeader"], [data-testid="stSidebarCollapseButton"] {{ display:none !important; }}
+        [data-testid="stSidebarContent"] {{
+            min-width:92px !important; max-width:92px !important; width:92px !important;
+            box-sizing:border-box !important; overflow:visible !important;
+        }}
+        [data-testid="stSidebarUserContent"] {{
+            min-width:68px !important; max-width:68px !important; width:68px !important;
+            overflow:visible !important;
+        }}
+        section[data-testid="stSidebar"] > div:first-child {{
+            padding:18px 12px !important; overflow:visible !important;
+        }}
+        [data-testid="stSidebar"] .brand-wrap {{
+            justify-content:center; padding:4px 0 18px; margin-bottom:14px;
+        }}
+        [data-testid="stSidebar"] .brand-mark {{ width:54px; height:54px; padding:7px; }}
+        [data-testid="stSidebar"] .brand-title,
+        [data-testid="stSidebar"] .brand-sub,
+        [data-testid="stSidebar"] .nav-section,
+        [data-testid="stSidebar"] .portfolio-card,
+        [data-testid="stSidebar"] .side-action {{ display:none !important; }}
+        [data-testid="stSidebar"] .stButton {{ margin:7px 0 !important; }}
+        [data-testid="stSidebar"] .stButton > button {{
+            min-height:52px !important; width:68px !important; padding:0 !important;
+            justify-content:center !important; border-radius:8px !important;
+            font-size:22px !important; line-height:1 !important;
+            border:1px solid transparent !important;
+            transition:background-color 210ms ease, border-color 210ms ease, color 210ms ease !important;
+        }}
+        [data-testid="stSidebar"] .stButton > button p {{
+            font-size:22px !important; line-height:1 !important; margin:0 !important;
+            transform:scale(1); transition:transform 210ms cubic-bezier(.2,.8,.2,1) !important;
+        }}
+        [data-testid="stSidebar"] .stButton > button[kind="primary"] {{
+            color:#0f4c81 !important; background:#e8f3fc !important; border-color:#bfdbef !important;
+        }}
+        [data-testid="stSidebar"] .stButton > button[kind="primary"] p {{
+            transform:scale(1.18);
+        }}
+        [data-testid="stSidebar"] .stButton > button:hover {{
+            color:#0f4c81 !important; background:#eef6fd !important; border-color:#bfdbef !important;
+        }}
+        [data-testid="stSidebar"] [class*="st-key-nav_"] {{
+            position:relative !important; overflow:visible !important;
+        }}
+        [data-testid="stSidebar"] [class*="st-key-nav_"]:before {{
+            content:""; position:absolute; left:-12px; top:50%; width:3px; height:0;
+            border-radius:0 4px 4px 0; background:#1769aa; transform:translateY(-50%);
+            transition:height 210ms ease; z-index:2;
+        }}
+        [data-testid="stSidebar"] [class*="st-key-nav_"]:has(button[kind="primary"]):before {{
+            height:30px;
+        }}
+        [data-testid="stSidebar"] [class*="st-key-nav_"]:after {{
+            position:absolute; left:calc(100% + 14px); top:50%; transform:translate(-8px,-50%);
+            width:max-content; max-width:250px; padding:12px 14px; border-radius:11px;
+            color:#ffffff; background:#111827; box-shadow:0 10px 24px rgba(15,23,42,.20);
+            font-size:12px; font-weight:500; line-height:1.45; text-align:left; white-space:pre-line;
+            opacity:0; visibility:hidden; pointer-events:none; z-index:9999;
+            transition:opacity 210ms ease, transform 210ms cubic-bezier(.2,.8,.2,1), visibility 210ms ease;
+        }}
+        [data-testid="stSidebar"] [class*="st-key-nav_"]:hover:after {{
+            opacity:1; visibility:visible; transform:translate(0,-50%);
+        }}
+        [data-testid="stSidebar"] .st-key-nav_Dashboard:after {{
+            content:"Dashboard\A Executive procurement controls and operating status";
+        }}
+        [data-testid="stSidebar"] .st-key-nav_Transaction-Feed:after {{
+            content:"Transaction Feed\A Monitor procurement transactions in real time";
+        }}
+        [data-testid="stSidebar"] .st-key-nav_Vendor-Intelligence:after {{
+            content:"Vendor Intelligence\A Analyze vendor risk, compliance and performance";
+        }}
+        [data-testid="stSidebar"] .st-key-nav_Risk-Reports:after {{
+            content:"Risk Reports\A View control alerts and risk analytics";
+        }}
+        [data-testid="stSidebar"] [class*="st-key-nav_Risk-"]:after {{
+            content:"Risk & Compliance Monitoring\A Monitor compliance controls and active exceptions";
+        }}
+        [data-testid="stSidebar"] .st-key-nav_Risk-Reports:after {{
+            content:"Risk Reports\A View control alerts and risk analytics";
+        }}
+        [data-testid="stSidebar"] .st-key-nav_Audit-Logs:after {{
+            content:"Audit Logs\A Audit trail and activity monitoring";
+        }}
+        [data-testid="stSidebar"] .st-key-nav_Configuration:after {{
+            content:"Configuration\A Configure procurement control policies";
+        }}
+
+        /* Live transaction risk meter */
+        .risk-meter-wrap {{
+            display:flex; flex-direction:column; align-items:center; gap:10px;
+            padding:12px 0 18px; margin:0 0 12px; border-bottom:1px solid #d1d5db;
+        }}
+        .risk-meter {{
+            --score:0; --risk-color:#2e7d32;
+            width:154px; height:154px; border-radius:50%;
+            display:grid; place-items:center;
+            background:conic-gradient(var(--risk-color) calc(var(--score) * 1%), #e5e7eb 0);
+            position:relative;
+        }}
+        .risk-meter:after {{
+            content:""; position:absolute; inset:14px; border-radius:50%; background:#ffffff;
+        }}
+        .risk-meter-content {{ position:relative; z-index:1; text-align:center; }}
+        .risk-meter-label {{ color:#6b7280; font-size:10px; font-weight:800; letter-spacing:.10em; text-transform:uppercase; }}
+        .risk-meter-score {{ color:#000000; font-size:42px; font-weight:900; line-height:1; margin-top:5px; }}
+        .risk-meter-category {{ color:#374151; font-size:13px; font-weight:800; }}
+        .analysis-results-title {{
+            color:#000000; font-size:11px; font-weight:900; letter-spacing:.11em;
+            text-transform:uppercase; margin:8px 0 4px;
         }}
         </style>
         """,
@@ -976,7 +1405,7 @@ def render_sidebar(df: pd.DataFrame) -> str:
     render_html(
         f"""
     <div class="brand-wrap">
-        <div class="brand-mark">PS</div>
+        <div class="brand-mark"><img src="{platform_logo_data_uri()}" alt="{APP_NAME} logo"></div>
         <div>
             <div class="brand-title">{APP_NAME}</div>
             <div class="brand-sub">{APP_SUBTITLE}</div>
@@ -985,24 +1414,28 @@ def render_sidebar(df: pd.DataFrame) -> str:
     """,
         st.sidebar,
     )
-    active_section = None
+    nav_icons = {
+        "Dashboard": "\u25a6",
+        "Transaction Feed": "\u2261",
+        "Vendor Intelligence": "\u25c7",
+        "Risk Reports": "\u25b3",
+        "Risk & Compliance Monitoring": "\u2713",
+        "Audit Logs": "\u25a4",
+        "Configuration": "\u2699",
+    }
     for section, name, code in PAGES:
-        if section != active_section:
-            render_html(f'<div class="nav-section">{section}</div>', st.sidebar)
-            active_section = section
         active = name == page
-        label = f"{'●' if active else '•'}  {name}    {code}"
-        if st.sidebar.button(label, key=f"nav_{name}", type="primary" if active else "secondary", use_container_width=True):
+        if st.sidebar.button(nav_icons[name], key=f"nav_{name}", type="primary" if active else "secondary", use_container_width=True):
             st.session_state.active_page = name
 
     render_html(
         f"""
     <div class="portfolio-card">
-        <div class="portfolio-title">PORTFOLIO STATS</div>
-        <div class="stat-row"><span>Total TXNs</span><strong>{len(df):,}</strong></div>
-        <div class="stat-row"><span>Fraud Flagged</span><strong>{frauds:,}</strong></div>
-        <div class="stat-row"><span>Under Review</span><strong>{review:,}</strong></div>
-        <div class="stat-row"><span>Fraud Rate</span><strong>{rate:.1f}%</strong></div>
+        <div class="portfolio-title">CONTROL PORTFOLIO</div>
+        <div class="stat-row"><span>Transactions Assessed</span><strong>{len(df):,}</strong></div>
+        <div class="stat-row"><span>Control Exceptions</span><strong>{frauds:,}</strong></div>
+        <div class="stat-row"><span>Pending Review</span><strong>{review:,}</strong></div>
+        <div class="stat-row"><span>Exception Rate</span><strong>{rate:.1f}%</strong></div>
     </div>
     <div class="side-action">Refresh Intelligence</div>
     """,
@@ -1018,11 +1451,11 @@ def render_topbar(page: str) -> None:
         f"""
         <div class="topbar">
             <div>
-                <div class="page-kicker">PROCUREMENT COMMAND SYSTEM</div>
+            <div class="page-kicker">PROCUREMENT OPERATIONS PLATFORM</div>
                 <div class="page-title">{page}</div>
             </div>
-            <div class="search-pill">Search vendors, invoices, anomalies...</div>
-            <div class="status-pill"><span class="status-light"></span>AI monitoring live</div>
+            <div class="search-pill">Search vendors, invoices, purchase orders...</div>
+            <div class="status-pill"><span class="status-light"></span>Risk & compliance monitoring</div>
             <div class="time-pill">{now} IST | {txn["transaction_id"]}</div>
         </div>
         """
@@ -1053,18 +1486,37 @@ def kpi_grid(items: List[Tuple[str, str, str]]) -> None:
     render_html(html)
 
 
+def executive_control_grid(scores: Dict[str, float], txn: Dict[str, object]) -> None:
+    risk = float(scores["risk_score"])
+    health = "Stable" if float(scores["trust_score"]) >= 55 else "Watchlist"
+    payment = "Elevated" if str(txn["payment_method"]) in ["UPI", "Wire"] else "Controlled"
+    render_html(
+        f"""
+        <div class="executive-grid">
+            <div class="executive-card"><div class="executive-label">Compliance Status</div><div class="executive-value"><span class="chip good">Compliant</span></div></div>
+            <div class="executive-card"><div class="executive-label">Vendor Health</div><div class="executive-value"><span class="chip {'good' if health == 'Stable' else 'warn'}">{health}</span></div></div>
+            <div class="executive-card"><div class="executive-label">Audit Readiness</div><div class="executive-value">92%</div></div>
+            <div class="executive-card"><div class="executive-label">Approval Progress</div><div class="executive-value">2 of 4</div></div>
+            <div class="executive-card"><div class="executive-label">Contract Alignment</div><div class="executive-value"><span class="chip good">Matched</span></div></div>
+            <div class="executive-card"><div class="executive-label">Payment Risk Exposure</div><div class="executive-value"><span class="chip {'warn' if payment == 'Elevated' else 'good'}">{payment}</span></div></div>
+            <div class="executive-card"><div class="executive-label">Procurement Control Score</div><div class="executive-value">{100 - risk:.0f}/100</div></div>
+        </div>
+        """
+    )
+
+
 def plot_theme(fig: go.Figure, height: int = 380, title: str | None = None, subtitle: str | None = None) -> go.Figure:
     title_text = None
     if title:
         title_text = f"<b>{title}</b>"
         if subtitle:
-            title_text += f"<br><span style='font-size:12px;color:#8fa4bd'>{subtitle}</span>"
+            title_text += f"<br><span style='font-size:12px;color:#667085'>{subtitle}</span>"
     fig.update_layout(
         height=height,
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(color="#c7d7ea", family="Inter", size=13),
-        title=dict(text=title_text, x=0.01, xanchor="left", font=dict(size=18, color="#eef7ff")) if title_text else None,
+        paper_bgcolor="rgba(255,255,255,0)",
+        plot_bgcolor="rgba(255,255,255,0)",
+        font=dict(color="#344054", family="Inter", size=13),
+        title=dict(text=title_text, x=0.01, xanchor="left", font=dict(size=18, color="#172b4d")) if title_text else None,
         margin=dict(l=52, r=28, t=76 if title_text else 34, b=54),
         legend=dict(
             orientation="h",
@@ -1072,24 +1524,24 @@ def plot_theme(fig: go.Figure, height: int = 380, title: str | None = None, subt
             y=1.01,
             xanchor="right",
             x=1,
-            font=dict(size=12, color="#aebfd3"),
-            bgcolor="rgba(0,0,0,0)",
+            font=dict(size=12, color="#475467"),
+            bgcolor="rgba(255,255,255,0)",
         ),
-        hoverlabel=dict(bgcolor="#0b1728", bordercolor="rgba(18,214,197,0.35)", font=dict(color="#eef7ff", family="Inter", size=12)),
+        hoverlabel=dict(bgcolor="#ffffff", bordercolor="#cfd8e3", font=dict(color="#172b4d", family="Inter", size=12)),
         xaxis=dict(
-            gridcolor="rgba(132,179,207,0.10)",
-            zerolinecolor="rgba(132,179,207,0.10)",
-            linecolor="rgba(132,179,207,0.22)",
-            tickfont=dict(size=12, color="#9fb1c7"),
-            title_font=dict(size=13, color="#c6d8ec"),
+            gridcolor="#edf0f4",
+            zerolinecolor="#edf0f4",
+            linecolor="#d9e0e8",
+            tickfont=dict(size=12, color="#667085"),
+            title_font=dict(size=13, color="#475467"),
             automargin=True,
         ),
         yaxis=dict(
-            gridcolor="rgba(132,179,207,0.10)",
-            zerolinecolor="rgba(132,179,207,0.10)",
-            linecolor="rgba(132,179,207,0.22)",
-            tickfont=dict(size=12, color="#9fb1c7"),
-            title_font=dict(size=13, color="#c6d8ec"),
+            gridcolor="#edf0f4",
+            zerolinecolor="#edf0f4",
+            linecolor="#d9e0e8",
+            tickfont=dict(size=12, color="#667085"),
+            title_font=dict(size=13, color="#475467"),
             automargin=True,
         ),
     )
@@ -1097,17 +1549,17 @@ def plot_theme(fig: go.Figure, height: int = 380, title: str | None = None, subt
     return fig
 
 
-def gauge(score: float, title: str = "AI Risk Score") -> go.Figure:
+def gauge(score: float, title: str = "Control Risk Score") -> go.Figure:
     fig = go.Figure(
         go.Indicator(
             mode="gauge+number",
             value=score,
-            number={"suffix": "/100", "font": {"size": 42, "color": "#f6fbff"}},
-            title={"text": title, "font": {"size": 15, "color": "#b9c9dc"}},
+            number={"suffix": "/100", "font": {"size": 42, "color": "#111827"}},
+            title={"text": title, "font": {"size": 15, "color": "#374151"}},
             gauge={
-                "axis": {"range": [0, 100], "tickcolor": "rgba(255,255,255,0.25)"},
+                "axis": {"range": [0, 100], "tickcolor": "#6b7280"},
                 "bar": {"color": risk_color(score), "thickness": 0.25},
-                "bgcolor": "rgba(255,255,255,0.05)",
+                "bgcolor": "#f3f4f6",
                 "borderwidth": 0,
                 "steps": [
                     {"range": [0, 36], "color": "rgba(67,227,159,0.20)"},
@@ -1150,11 +1602,11 @@ def summary_briefing(title: str, scoped: pd.DataFrame) -> None:
         f"""
         <div class="briefing-grid">
             <div class="briefing-card">
-                <div class="briefing-title">Executive AI Summary</div>
-                <div class="briefing-copy">{title} is focused on {vendor["vendor_name"]} ({vendor["vendor_id"]}). Current transaction risk is {risk:.1f}/100 with {confidence:.1f}% AI confidence across {len(scoped):,} context-linked records.</div>
+                <div class="briefing-title">Procurement Transaction Context</div>
+                <div class="briefing-copy">{title} is focused on {vendor["vendor_name"]} ({vendor["vendor_id"]}). Current transaction risk is {risk:.1f}/100 with {confidence:.1f}% control confidence across {len(scoped):,} context-linked records.</div>
             </div>
             <div class="briefing-card">
-                <div class="briefing-title">Fraud Explanation</div>
+                <div class="briefing-title">Control Exception Rationale</div>
                 <div class="briefing-copy">The active score is driven by {txn["payment_method"]} payment behavior, {money(float(txn["amount"]))} exposure, vendor trust at {trust:.1f}/100, and threshold-sensitive invoice patterns.</div>
             </div>
             <div class="briefing-card">
@@ -1166,8 +1618,8 @@ def summary_briefing(title: str, scoped: pd.DataFrame) -> None:
                 <div class="briefing-copy">Context-linked spend is {money(spend)} with average contextual risk of {avg_risk:.1f}/100. Highest exposed department is {top_dept}; highest risk payment behavior is {top_payment}.</div>
             </div>
             <div class="briefing-card">
-                <div class="briefing-title">Anomaly Explanation</div>
-                <div class="briefing-copy">Anomaly intensity is {anomaly:.1f}/100, combining amount outlier pressure, payment rail risk, timing signals, and the vendor's behavioral baseline.</div>
+                <div class="briefing-title">Exception Review Rationale</div>
+                <div class="briefing-copy">Exception intensity is {anomaly:.1f}/100, combining amount tolerance pressure, payment-route risk, timing controls, and the vendor's operating baseline.</div>
             </div>
             <div class="briefing-card">
                 <div class="briefing-title">Department Exposure Summary</div>
@@ -1178,35 +1630,162 @@ def summary_briefing(title: str, scoped: pd.DataFrame) -> None:
     )
 
 
-def master_transaction_form(df: pd.DataFrame, vendors: pd.DataFrame) -> None:
+def procurement_intake_workspace(df: pd.DataFrame, vendors: pd.DataFrame) -> None:
     txn = st.session_state.current_transaction
-    panel_open("Live Transaction Analysis", "This is the master context. Changing any field synchronizes every page, KPI, alert, heatmap, and summary.")
+    vendor = st.session_state.current_vendor
     vendor_ids = list(vendors.sort_values("vendor_id")["vendor_id"])
+
+    panel_open()
+    render_html(
+        """
+        <div class="card-title">Vendor Information</div>
+        <div class="card-note">Select the supplier record and confirm the purchasing ownership for this transaction.</div>
+        """
+    )
     selected_vendor = st.selectbox(
-        "Vendor",
+        "Search vendor name or ID",
         vendor_ids,
         index=vendor_ids.index(str(txn["vendor_id"])) if str(txn["vendor_id"]) in vendor_ids else 0,
         format_func=lambda x: f"{x} | {vendors.loc[vendors['vendor_id'] == x, 'vendor_name'].iloc[0]}",
         key="dash_vendor_id",
     )
+    render_html(
+        f"""
+        <div class="context-strip">
+            <div><div class="context-label">VENDOR ID</div><div class="context-value">{txn["vendor_id"]}</div></div>
+            <div><div class="context-label">VENDOR NAME</div><div class="context-value">{vendor["vendor_name"]}</div></div>
+            <div><div class="context-label">ONBOARDING STATUS</div><div class="context-value"><span class="chip good">Active supplier</span></div></div>
+        </div>
+        """
+    )
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        department = st.selectbox("Department", DEPARTMENTS, index=DEPARTMENTS.index(str(txn["department"])) if str(txn["department"]) in DEPARTMENTS else 0, key="dash_department")
+    with c2:
+        st.text_input("Cost Center", value="CC-IT-042", key="intake_cost_center")
+    with c3:
+        category = st.selectbox("Category", CATEGORIES, index=CATEGORIES.index(str(txn["category"])) if str(txn["category"]) in CATEGORIES else 0, key="dash_category")
+    panel_close()
+
+    panel_open()
+    render_html(
+        """
+        <div class="card-title">Invoice Information</div>
+        <div class="card-note">Capture invoice identifiers, document date, payment route, and the transaction value submitted for review.</div>
+        """
+    )
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        st.text_input("Invoice Number", value=f"INV-{str(txn['transaction_id'])[-6:]}", key="intake_invoice")
+    with c2:
+        st.date_input("Invoice Date", value=pd.to_datetime(txn["timestamp"]).date(), key="intake_invoice_date")
+    with c3:
+        payment = st.selectbox("Payment Method", PAYMENTS, index=PAYMENTS.index(str(txn["payment_method"])) if str(txn["payment_method"]) in PAYMENTS else 0, key="dash_payment")
+    c4, c5 = st.columns(2)
+    with c4:
+        st.selectbox("Currency", ["INR", "USD", "EUR", "GBP", "SGD"], key="intake_currency")
+    with c5:
+        amount = st.number_input("Transaction Amount", min_value=1000.0, max_value=5000000.0, value=float(txn["amount"]), step=10000.0, key="dash_amount")
+    panel_close()
+
+    panel_open()
+    render_html(
+        """
+        <div class="card-title">Purchase Order Details</div>
+        <div class="card-note">Associate this invoice with its purchase order and governing contract before validation.</div>
+        """
+    )
     c1, c2 = st.columns(2)
     with c1:
-        amount = st.number_input("Amount", min_value=1000.0, max_value=5000000.0, value=float(txn["amount"]), step=10000.0, key="dash_amount")
+        st.text_input("Purchase Order Number", value=f"PO-2026-{str(txn['transaction_id'])[-5:]}", key="intake_po")
     with c2:
-        payment = st.selectbox("Payment", PAYMENTS, index=PAYMENTS.index(str(txn["payment_method"])) if str(txn["payment_method"]) in PAYMENTS else 0, key="dash_payment")
-    c3, c4 = st.columns(2)
-    with c3:
-        department = st.selectbox("Department", DEPARTMENTS, index=DEPARTMENTS.index(str(txn["department"])) if str(txn["department"]) in DEPARTMENTS else 0, key="dash_department")
-    with c4:
-        category = st.selectbox("Category", CATEGORIES, index=CATEGORIES.index(str(txn["category"])) if str(txn["category"]) in CATEGORIES else 0, key="dash_category")
+        st.text_input("Contract Reference", value="CTR-IT-2026-0184", key="intake_contract")
+    render_html('<a class="contract-link" href="#">View linked master services agreement</a>')
+    panel_close()
+
+    panel_open()
+    render_html(
+        """
+        <div class="card-title">Compliance Validation</div>
+        <div class="card-note">Automated control checks are refreshed when the procurement transaction context changes.</div>
+        <div class="check-row"><span>Vendor onboarding controls</span><span class="chip good">Passed</span></div>
+        <div class="check-row"><span>Tax registration verification</span><span class="chip good">Verified</span></div>
+        <div class="check-row"><span>Contract coverage</span><span class="chip good">Matched</span></div>
+        <div class="check-row"><span>Invoice amount tolerance</span><span class="chip warn">Review required</span></div>
+        """
+    )
+    panel_close()
+
+    panel_open()
+    render_html(
+        """
+        <div class="card-title">Approval Workflow</div>
+        <div class="card-note">Assign the accountable approval authority and provide the supporting transaction documents.</div>
+        """
+    )
+    c1, c2 = st.columns(2)
+    with c1:
+        st.selectbox("Approval Authority", ["M. Kapoor | Finance Director", "A. Rao | Procurement Lead", "S. Iyer | Department Head"], key="intake_authority")
+    with c2:
+        st.selectbox("Approval Status", ["Pending Review", "Approved", "Escalated"], key="intake_approval_status")
+    st.file_uploader("Document attachments", accept_multiple_files=True, key="intake_documents")
+    render_html('<div class="attachment-box">Attach purchase order, invoice PDF, contract addendum, or supporting approval documents.</div>')
+    panel_close()
 
     auto_synced = sync_master_context(df, vendors, selected_vendor, amount, payment, department, category)
     if auto_synced:
         st.rerun()
 
-    if st.button("Analyze Transaction", use_container_width=True):
+    if st.button("Validate Procurement Record", use_container_width=True):
         sync_master_context(df, vendors, selected_vendor, amount, payment, department, category)
         st.rerun()
+
+
+def transaction_analysis_sidebar() -> None:
+    txn = st.session_state.current_transaction
+    vendor = st.session_state.current_vendor
+    scores = st.session_state.current_scores
+    risk = float(scores["risk_score"])
+    if risk >= 76:
+        meter_color, risk_category = "#c62828", "High Risk"
+    elif risk >= 36:
+        meter_color, risk_category = "#d97706", "Medium Risk"
+    else:
+        meter_color, risk_category = "#2e7d32", "Low Risk"
+    compliance = "Compliant" if float(scores["compliance_score"]) >= 70 else "Review Required"
+    duplicate = "No duplicate detected" if not bool(txn.get("split_pattern", False)) else "Potential split invoice"
+
+    panel_open("Live Transaction Analysis", "Procurement transaction context and control validation summary.")
+    render_html(
+        f"""
+        <div class="risk-meter-wrap">
+            <div class="risk-meter" style="--score:{risk:.0f}; --risk-color:{meter_color};">
+                <div class="risk-meter-content">
+                    <div class="risk-meter-label">Risk Score</div>
+                    <div class="risk-meter-score">{risk:.0f}</div>
+                </div>
+            </div>
+            <div class="risk-meter-category" style="color:{meter_color};">{risk_category}</div>
+        </div>
+        <div class="analysis-results-title">Analysis Results</div>
+        <div class="check-row"><span>Vendor Risk Score</span><span class="chip {'warn' if risk >= 58 else 'good'}">{risk_label(risk)}</span></div>
+        <div class="check-row"><span>Compliance Status</span><span class="chip good">{compliance}</span></div>
+        <div class="check-row"><span>Contract Match Status</span><span class="chip good">Matched</span></div>
+        <div class="check-row"><span>Duplicate Invoice Check</span><span class="chip {'warn' if bool(txn.get("split_pattern", False)) else 'good'}">{duplicate}</span></div>
+        <div class="check-row"><span>Payment Risk Indicator</span><span class="chip {'warn' if str(txn["payment_method"]) in ["UPI", "Wire"] else 'good'}">{txn["payment_method"]} monitored</span></div>
+        <div class="check-row"><span>Approval Chain Status</span><span class="chip pending">Pending finance review</span></div>
+        """
+    )
+    panel_close()
+    panel_open("Transaction Reference", "Linked record identifiers for audit traceability.")
+    render_html(
+        f"""
+        <div class="check-row"><span>Transaction ID</span><strong>{txn["transaction_id"]}</strong></div>
+        <div class="check-row"><span>Vendor ID</span><strong>{vendor["vendor_id"]}</strong></div>
+        <div class="check-row"><span>Contract Reference</span><a class="contract-link" href="#">CTR-IT-2026-0184</a></div>
+        <div class="check-row"><span>Review SLA</span><strong>14 minutes</strong></div>
+        """
+    )
     panel_close()
 
 
@@ -1218,52 +1797,48 @@ def dashboard_page(df: pd.DataFrame, vendors: pd.DataFrame) -> None:
     scoped = contextual_portfolio(df)
     vendor_txns = contextual_transactions(df)
 
+    render_html(
+        f"""
+        <div class="workflow-head">
+            <div>
+                <div class="workflow-title">Procurement Transaction Intake</div>
+                <div class="workflow-sub">Validate vendor, invoice, purchase order, compliance, and approval information before posting.</div>
+            </div>
+            <div class="workflow-meta">
+                <span class="chip pending">Pending Review</span>
+                <span>Last updated {datetime.now().strftime("%d %b %Y, %H:%M")} IST</span>
+            </div>
+        </div>
+        """
+    )
     kpi_grid(
         [
             ("Selected Vendor", str(txn["vendor_id"]), str(vendor["vendor_name"])),
-            ("Transaction Amount", money(float(txn["amount"])), f'{txn["payment_method"]} rail monitored'),
-            ("Vendor Trust", f'{scores["trust_score"]:.0f}/100', f'Compliance {scores["compliance_score"]:.0f}/100'),
-            ("AI Confidence", pct(scores["ai_confidence"]), "Synchronized across all pages"),
+            ("Transaction Amount", money(float(txn["amount"])), f'{txn["payment_method"]} payment method'),
+            ("Vendor Compliance", f'{scores["compliance_score"]:.0f}/100', "Supplier master controls"),
+            ("Approval Status", "Pending Review", "Finance and procurement workflow"),
         ]
     )
+    executive_control_grid(scores, txn)
 
-    left, right = st.columns([1.56, 1], gap="large")
+    left, right = st.columns([1.72, 0.92], gap="large")
     with left:
-        panel_open(extra="hero")
-        render_html(
-            f"""
-            <div class="hero-grid">
-                <div>
-                    <div class="badge">LIVE MASTER CONTROL</div>
-                    <div class="hero-score" style="color:{risk_color(scores["risk_score"])};">{scores["risk_score"]:.0f}</div>
-                    <div class="micro-label">{risk_label(scores["risk_score"])} PROCUREMENT RISK</div>
-                    <div class="hero-sub">
-                        Current analysis is locked to {txn["transaction_id"]} for {vendor["vendor_name"]}.
-                        Every page uses this same vendor, amount, payment rail, model score, and alert set.
-                    </div>
-                </div>
-                <div>
-            """
-        )
-        st.plotly_chart(gauge(scores["risk_score"]), use_container_width=True, config={"displayModeBar": False})
-        render_html("</div></div>")
-        panel_close()
-
+        procurement_intake_workspace(df, vendors)
     with right:
-        master_transaction_form(df, vendors)
+        transaction_analysis_sidebar()
 
     c1, c2 = st.columns([1.1, 0.9], gap="large")
     with c1:
-        panel_open("Fraud Trend", "Risk movement for records connected to the active vendor, department, category, or payment rail.")
+        panel_open("Control Risk Trend", "Risk movement for records connected to the active vendor, department, category, or payment route.")
         trend = scoped.set_index("timestamp").resample("W")["risk_score"].mean().reset_index()
         fig = px.area(trend, x="timestamp", y="risk_score", color_discrete_sequence=[C["teal"]])
         fig.add_scatter(x=trend["timestamp"], y=trend["risk_score"], mode="lines", line=dict(color=C["blue"], width=2), name="risk")
         fig.update_xaxes(title_text="Week")
         fig.update_yaxes(title_text="Average risk score")
-        st.plotly_chart(plot_theme(fig, 390, "Contextual Fraud Trend", f"{txn['vendor_id']} plus matching department/category/payment context"), use_container_width=True, config={"displayModeBar": False})
+        st.plotly_chart(plot_theme(fig, 390, "Procurement Control Risk Trend", f"{txn['vendor_id']} plus matching department, category, and payment context"), use_container_width=True, config={"displayModeBar": False})
         panel_close()
     with c2:
-        panel_open("Recent Alerts", "Live alert set generated from the master transaction context.")
+        panel_open("Active Control Exceptions", "Current review items generated from the procurement transaction context.")
         alerts_html(alerts)
         panel_close()
 
@@ -1299,15 +1874,15 @@ def dashboard_page(df: pd.DataFrame, vendors: pd.DataFrame) -> None:
         st.plotly_chart(plot_theme(fig, 380, "Vendor Trust vs Risk", "Current vendor is highlighted against peer risk tier"), use_container_width=True, config={"displayModeBar": False})
         panel_close()
     with row2b:
-        panel_open("Transaction Scatter", "Amount-to-risk relationship for synchronized context records.")
+        panel_open("Transaction Risk Distribution", "Amount-to-risk relationship for synchronized procurement records.")
         sample = scoped.sample(min(180, len(scoped)), random_state=4) if len(scoped) > 1 else scoped
         fig = px.scatter(sample, x="amount", y="risk_score", color="status", size="anomaly_score", color_discrete_map={"Blocked": C["red"], "Review": C["amber"], "Watch": C["blue"], "Approved": C["green"]})
         fig.update_xaxes(title_text="Transaction amount")
         fig.update_yaxes(title_text="Risk score")
-        st.plotly_chart(plot_theme(fig, 380, "Transaction Risk Scatter", f"{len(sample):,} context-linked observations"), use_container_width=True, config={"displayModeBar": False})
+        st.plotly_chart(plot_theme(fig, 380, "Transaction Risk Distribution", f"{len(sample):,} context-linked observations"), use_container_width=True, config={"displayModeBar": False})
         panel_close()
 
-    panel_open("AI Anomaly Detection", "Dedicated full-width anomaly view for the active vendor context. This section is intentionally spacious because it carries the core AI signal.", "anomaly")
+    panel_open("Compliance Exception Analysis", "Full-width review of amount outliers, payment signals, and vendor exceptions in the active procurement context.", "anomaly")
     anomaly = vendor_txns.sort_values("timestamp").tail(80)
     fig = px.scatter(
         anomaly,
@@ -1318,13 +1893,13 @@ def dashboard_page(df: pd.DataFrame, vendors: pd.DataFrame) -> None:
         hover_name="transaction_id",
         color_continuous_scale=["#43e39f", "#ffc857", "#ff5d6c"],
     )
-    fig.add_hline(y=scores["anomaly_score"], line_dash="dash", line_color=C["teal"], annotation_text="Current anomaly score")
+    fig.add_hline(y=scores["anomaly_score"], line_dash="dash", line_color=C["teal"], annotation_text="Current exception score")
     fig.update_xaxes(title_text="Transaction timeline")
-    fig.update_yaxes(title_text="Anomaly intensity")
-    st.plotly_chart(plot_theme(fig, 520, "Vendor Anomaly Timeline", f"{txn['vendor_id']} | current score {scores['anomaly_score']:.1f}/100"), use_container_width=True, config={"displayModeBar": False})
+    fig.update_yaxes(title_text="Exception intensity")
+    st.plotly_chart(plot_theme(fig, 520, "Vendor Exception Timeline", f"{txn['vendor_id']} | current score {scores['anomaly_score']:.1f}/100"), use_container_width=True, config={"displayModeBar": False})
     panel_close()
 
-    panel_open("Executive Intelligence Briefing", "Summary report generated from the same synchronized vendor, transaction, score, alert, and filter state.")
+    panel_open("Procurement Review Briefing", "Summary generated from the synchronized vendor, transaction, score, alert, and filter state.")
     summary_briefing("Dashboard briefing", scoped)
     panel_close()
 
@@ -1336,7 +1911,7 @@ def dashboard_page(df: pd.DataFrame, vendors: pd.DataFrame) -> None:
 
 def transaction_feed_page(df: pd.DataFrame, vendors: pd.DataFrame) -> None:
     txn = st.session_state.current_transaction
-    panel_open("Searchable Live Feed", "The active vendor is pinned first; filters begin from the global master context.")
+    panel_open("Searchable Transaction Register", "The active vendor is pinned first; filters begin from the procurement transaction context.")
     c1, c2, c3, c4 = st.columns([1.3, 1, 1, 1])
     with c1:
         search = st.text_input("Search", value=st.session_state.feed_search, placeholder="Vendor, transaction, department")
@@ -1380,7 +1955,7 @@ def transaction_feed_page(df: pd.DataFrame, vendors: pd.DataFrame) -> None:
         st.plotly_chart(plot_theme(fig, 380, "Filtered Risk Tags", f"{len(filtered):,} visible records"), use_container_width=True, config={"displayModeBar": False})
         panel_close()
     with c2:
-        panel_open("Synchronized Selection", "This is the same master context used by all pages.")
+        panel_open("Synchronized Selection", "This is the same procurement transaction context used by all pages.")
         render_html(
             f"""
             <div class="metric-row"><span>Current TXN</span><span>{txn["transaction_id"]}</span></div>
@@ -1392,7 +1967,7 @@ def transaction_feed_page(df: pd.DataFrame, vendors: pd.DataFrame) -> None:
         )
         panel_close()
 
-    panel_open("Transaction Feed Summary Report", "Briefing generated from filtered feed records and the active master context.")
+    panel_open("Transaction Register Summary", "Briefing generated from filtered records and the active procurement transaction context.")
     summary_briefing("Transaction feed briefing", filtered if len(filtered) else contextual_transactions(df))
     panel_close()
 
@@ -1408,7 +1983,7 @@ def vendor_intelligence_page(df: pd.DataFrame, vendors: pd.DataFrame) -> None:
             ("Vendor Profile", str(vendor["vendor_id"]), str(vendor["country"])),
             ("Trust Score", f'{scores["trust_score"]:.0f}/100', f'{vendor["txns"]:.0f} transactions analyzed'),
             ("Total Exposure", money(float(vendor["total_spend"])), "Portfolio-linked spend"),
-            ("Fraud History", f'{int(vendor["frauds"])} flags', f'Max risk {vendor["max_risk"]:.0f}/100'),
+            ("Control Exception History", f'{int(vendor["frauds"])} flags', f'Max risk {vendor["max_risk"]:.0f}/100'),
         ]
     )
 
@@ -1462,24 +2037,24 @@ def vendor_intelligence_page(df: pd.DataFrame, vendors: pd.DataFrame) -> None:
         st.plotly_chart(plot_theme(fig, 380, "Compliance Heatmap", "Higher intensity indicates higher average fraud risk"), use_container_width=True, config={"displayModeBar": False})
         panel_close()
     with r2b:
-        panel_open("Fraud History", "Historical vendor exceptions by status.")
+        panel_open("Control Exception History", "Historical vendor exceptions by status.")
         history = vdf.groupby("status", as_index=False).agg(count=("transaction_id", "count"), avg_risk=("risk_score", "mean"))
         fig = px.bar(history, x="status", y="count", color="avg_risk", color_continuous_scale=["#43e39f", "#ffc857", "#ff5d6c"])
         fig.update_xaxes(title_text="Status")
         fig.update_yaxes(title_text="Transaction count")
-        st.plotly_chart(plot_theme(fig, 380, "Fraud History", f"{int(vendor['frauds'])} historical fraud flags"), use_container_width=True, config={"displayModeBar": False})
+        st.plotly_chart(plot_theme(fig, 380, "Control Exception History", f"{int(vendor['frauds'])} historical exception flags"), use_container_width=True, config={"displayModeBar": False})
         panel_close()
 
-    panel_open("Vendor Anomaly Investigation", "Full-width AI anomaly view for this vendor's transaction timeline.", "anomaly")
+    panel_open("Vendor Exception Investigation", "Full-width exception review for this vendor's transaction timeline.", "anomaly")
     fig = px.area(vdf, x="timestamp", y="anomaly_score", color_discrete_sequence=[C["teal"]])
     fig.add_scatter(x=vdf["timestamp"], y=vdf["risk_score"], mode="lines", line=dict(color=C["red"], width=2), name="Risk score")
     fig.add_hline(y=scores["anomaly_score"], line_dash="dash", line_color=C["amber"], annotation_text="Current anomaly")
     fig.update_xaxes(title_text="Transaction timeline")
-    fig.update_yaxes(title_text="AI score")
-    st.plotly_chart(plot_theme(fig, 500, "Vendor Anomaly Detection", f"{txn['vendor_id']} anomaly and risk behavior"), use_container_width=True, config={"displayModeBar": False})
+    fig.update_yaxes(title_text="Control score")
+    st.plotly_chart(plot_theme(fig, 500, "Vendor Exception Review", f"{txn['vendor_id']} exception and risk behavior"), use_container_width=True, config={"displayModeBar": False})
     panel_close()
 
-    panel_open("Risk Prediction Panel", "Predictive control guidance based on the synchronized vendor context.")
+    panel_open("Control Recommendation Panel", "Control guidance based on the synchronized vendor context.")
     alerts_html(st.session_state.current_alerts)
     panel_close()
 
@@ -1510,20 +2085,20 @@ def risk_reports_page(df: pd.DataFrame, vendors: pd.DataFrame) -> None:
         st.plotly_chart(plot_theme(fig, 410, "Department Risk Heatmap", f"Active context: {txn['vendor_id']} / {txn['department']}"), use_container_width=True, config={"displayModeBar": False})
         panel_close()
     with r1b:
-        panel_open("Fraud Distribution", "Status distribution for the same synchronized context.")
+        panel_open("Control Status Distribution", "Status distribution for the same synchronized context.")
         dist = scoped["status"].value_counts().rename_axis("status").reset_index(name="count")
         fig = px.pie(dist, names="status", values="count", hole=0.58, color="status", color_discrete_map={"Blocked": C["red"], "Review": C["amber"], "Watch": C["blue"], "Approved": C["green"]})
-        st.plotly_chart(plot_theme(fig, 410, "Fraud Distribution", f"{len(scoped):,} context-linked records"), use_container_width=True, config={"displayModeBar": False})
+        st.plotly_chart(plot_theme(fig, 410, "Control Status Distribution", f"{len(scoped):,} context-linked records"), use_container_width=True, config={"displayModeBar": False})
         panel_close()
 
     r2a, r2b = st.columns(2, gap="large")
     with r2a:
-        panel_open("Hourly Fraud Analysis", "Average risk by transaction hour inside the active context.")
+        panel_open("Hourly Control Exposure", "Average risk by transaction hour inside the active context.")
         hourly = scoped.assign(hour=scoped["timestamp"].dt.hour).groupby("hour", as_index=False)["risk_score"].mean()
         fig = px.bar(hourly, x="hour", y="risk_score", color="risk_score", color_continuous_scale=["#43e39f", "#ffc857", "#ff5d6c"])
         fig.update_xaxes(title_text="Hour of day")
         fig.update_yaxes(title_text="Average risk")
-        st.plotly_chart(plot_theme(fig, 380, "Hourly Fraud Analysis", "Late-hour spikes are easier to isolate"), use_container_width=True, config={"displayModeBar": False})
+        st.plotly_chart(plot_theme(fig, 380, "Hourly Control Exposure", "Late-hour risk patterns are easier to isolate"), use_container_width=True, config={"displayModeBar": False})
         panel_close()
     with r2b:
         panel_open("Category Exposure", "Spend concentration by category for synchronized context.")
@@ -1534,19 +2109,19 @@ def risk_reports_page(df: pd.DataFrame, vendors: pd.DataFrame) -> None:
         st.plotly_chart(plot_theme(fig, 380, "Category Exposure", f"Active category: {txn['category']}"), use_container_width=True, config={"displayModeBar": False})
         panel_close()
 
-    panel_open("Predictive Anomaly Report", "Full-width AI anomaly section for risk reporting and compliance review.", "anomaly")
+    panel_open("Control Exception Report", "Full-width exception section for risk reporting and compliance review.", "anomaly")
     trend = scoped.set_index("timestamp").resample("D").agg(risk_score=("risk_score", "mean"), anomaly_score=("anomaly_score", "mean"), amount=("amount", "sum")).reset_index()
     fig = go.Figure()
     fig.add_trace(go.Bar(x=trend["timestamp"], y=trend["amount"], name="Spend", marker_color="rgba(87,166,255,0.35)", yaxis="y2"))
     fig.add_trace(go.Scatter(x=trend["timestamp"], y=trend["risk_score"], mode="lines", name="Risk", line=dict(color=C["red"], width=3)))
     fig.add_trace(go.Scatter(x=trend["timestamp"], y=trend["anomaly_score"], mode="lines", name="Anomaly", line=dict(color=C["teal"], width=3)))
-    fig.update_layout(yaxis2=dict(title="Spend", overlaying="y", side="right", gridcolor="rgba(0,0,0,0)", tickfont=dict(color="#8fa4bd")))
+    fig.update_layout(yaxis2=dict(title="Spend", overlaying="y", side="right", gridcolor="rgba(255,255,255,0)", tickfont=dict(color="#6b7280")))
     fig.update_xaxes(title_text="Date")
-    fig.update_yaxes(title_text="AI score")
-    st.plotly_chart(plot_theme(fig, 520, "Predictive Risk and Spend Signal", "Daily anomaly, risk, and procurement spend in one executive view"), use_container_width=True, config={"displayModeBar": False})
+    fig.update_yaxes(title_text="Control score")
+    st.plotly_chart(plot_theme(fig, 520, "Risk and Spend Control Signal", "Daily exceptions, risk, and procurement spend in one executive view"), use_container_width=True, config={"displayModeBar": False})
     panel_close()
 
-    panel_open("High-Risk Vendors and Predictive Alerts", "Selected vendor is included with the highest-risk peer vendors.")
+    panel_open("High-Risk Vendors and Control Alerts", "Selected vendor is included with the highest-risk peer vendors.")
     view = pd.concat([vendors[vendors["vendor_id"] == txn["vendor_id"]], vendors.sort_values("avg_risk", ascending=False).head(12)]).drop_duplicates("vendor_id")
     view = view[["vendor_id", "vendor_name", "total_spend", "txns", "avg_risk", "trust_score", "frauds", "risk_tier"]]
     st.dataframe(view, use_container_width=True, hide_index=True)
@@ -1565,20 +2140,20 @@ def ai_monitoring_page(df: pd.DataFrame, vendors: pd.DataFrame) -> None:
     active = int((scoped["risk_score"] >= 58).sum())
     kpi_grid(
         [
-            ("Model Confidence", pct(scores["ai_confidence"]), "Live selected transaction"),
-            ("Anomaly Engine", pct(scores["anomaly_score"]), "Isolation forest signal"),
-            ("Active Detections", f"{active:,}", "High and critical events"),
-            ("System Health", "99.97%", "Realtime scan cluster"),
+            ("Control Confidence", pct(scores["ai_confidence"]), "Selected transaction assessment"),
+            ("Exception Intensity", pct(scores["anomaly_score"]), "Current control signal"),
+            ("Active Review Items", f"{active:,}", "High and critical events"),
+            ("Control Service Health", "99.97%", "Operational availability"),
         ]
     )
 
     c1, c2 = st.columns([1, 1], gap="large")
     with c1:
-        panel_open("AI Health Indicators", "Operational model health for the synchronized procurement context.")
+        panel_open("Control Service Indicators", "Operational control health for the synchronized procurement context.")
         fig = go.Figure()
         fig.add_trace(go.Scatterpolar(r=[92, 88, 96, 84, scores["ai_confidence"], 91], theta=["Inference", "Data Freshness", "Policy Rules", "Drift", "Confidence", "Latency"], fill="toself", line=dict(color=C["teal"])))
-        fig.update_layout(polar=dict(bgcolor="rgba(0,0,0,0)", radialaxis=dict(visible=True, range=[0, 100], gridcolor="rgba(132,179,207,0.14)")))
-        st.plotly_chart(plot_theme(fig, 410, "AI Health Radar", "Confidence, latency, drift, and policy engine status"), use_container_width=True, config={"displayModeBar": False})
+        fig.update_layout(polar=dict(bgcolor="rgba(255,255,255,0)", radialaxis=dict(visible=True, range=[0, 100], gridcolor="rgba(132,179,207,0.14)")))
+        st.plotly_chart(plot_theme(fig, 410, "Control Service Health", "Confidence, latency, policy, and data freshness status"), use_container_width=True, config={"displayModeBar": False})
         panel_close()
     with c2:
         panel_open("Alert Severity", "Alert mix generated from context-linked records.")
@@ -1589,7 +2164,7 @@ def ai_monitoring_page(df: pd.DataFrame, vendors: pd.DataFrame) -> None:
         st.plotly_chart(plot_theme(fig, 410, "Alert Severity", f"{active:,} active detections"), use_container_width=True, config={"displayModeBar": False})
         panel_close()
 
-    panel_open("Anomaly Engine Command View", "Full-width AI operations view for live scanning and anomaly intensity.", "anomaly")
+    panel_open("Control Monitoring Overview", "Full-width operations view for active review signals and exception intensity.", "anomaly")
     fig = px.scatter(
         vendor_txns.sort_values("timestamp").tail(100),
         x="timestamp",
@@ -1601,8 +2176,8 @@ def ai_monitoring_page(df: pd.DataFrame, vendors: pd.DataFrame) -> None:
     )
     fig.add_hline(y=scores["anomaly_score"], line_dash="dash", line_color=C["teal"], annotation_text="Current scan")
     fig.update_xaxes(title_text="Scan timeline")
-    fig.update_yaxes(title_text="Anomaly intensity")
-    st.plotly_chart(plot_theme(fig, 520, "Live Anomaly Scanning", f"{txn['vendor_id']} monitored with {scores['ai_confidence']:.1f}% confidence"), use_container_width=True, config={"displayModeBar": False})
+    fig.update_yaxes(title_text="Exception intensity")
+    st.plotly_chart(plot_theme(fig, 520, "Live Control Monitoring", f"{txn['vendor_id']} monitored with {scores['ai_confidence']:.1f}% control confidence"), use_container_width=True, config={"displayModeBar": False})
     panel_close()
 
     c3, c4 = st.columns([1, 1], gap="large")
@@ -1612,7 +2187,7 @@ def ai_monitoring_page(df: pd.DataFrame, vendors: pd.DataFrame) -> None:
         st.dataframe(scan, use_container_width=True, hide_index=True)
         panel_close()
     with c4:
-        panel_open("System Diagnostics", "AI system diagnostics for the active master context.")
+        panel_open("Control Service Diagnostics", "Operational diagnostics for the active procurement context.")
         render_html(
             f"""
             <div class="metric-row"><span>Feature Store</span><span style="color:{C["green"]};">Online</span></div>
@@ -1626,8 +2201,8 @@ def ai_monitoring_page(df: pd.DataFrame, vendors: pd.DataFrame) -> None:
         alerts_html(st.session_state.current_alerts)
         panel_close()
 
-    panel_open("AI Monitoring Briefing", "Model explanation and operations summary for the selected vendor context.")
-    summary_briefing("AI monitoring briefing", scoped)
+    panel_open("Risk & Compliance Briefing", "Control explanation and operations summary for the selected vendor context.")
+    summary_briefing("Risk and compliance briefing", scoped)
     panel_close()
 
 
@@ -1635,16 +2210,16 @@ def audit_logs_page(df: pd.DataFrame, vendors: pd.DataFrame) -> None:
     txn = st.session_state.current_transaction
     vendor = st.session_state.current_vendor
     events = [
-        ("Transaction analyzed", txn["transaction_id"], "Model scored live transaction and synchronized session state."),
+        ("Transaction assessed", txn["transaction_id"], "Control service scored the transaction and synchronized session state."),
         ("Vendor graph refreshed", txn["vendor_id"], f'{vendor["vendor_name"]} relationship, spend, and compliance context loaded.'),
         ("Risk report updated", risk_label(float(txn["risk_score"])), "Heatmaps and predictive alerts now reflect the selected transaction context."),
-        ("AI monitoring event", pct(float(txn["ai_confidence"])), "Confidence and anomaly diagnostics recalculated for active selection."),
+        ("Control monitoring event", pct(float(txn["ai_confidence"])), "Confidence and exception diagnostics recalculated for active selection."),
         ("Control recommendation", str(txn["status"]), "Workflow policy mapped to current score and payment rail."),
     ]
     rows = []
     base = datetime.now()
     for i, (event, entity, detail) in enumerate(events):
-        rows.append({"time": base - timedelta(minutes=i * 4), "event": event, "entity": entity, "detail": detail, "actor": "ProcureShield AI"})
+        rows.append({"time": base - timedelta(minutes=i * 4), "event": event, "entity": entity, "detail": detail, "actor": "ProcureShield Controls"})
     panel_open("Synchronized Audit Trail")
     st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
     panel_close()
@@ -1670,7 +2245,7 @@ def configuration_page(df: pd.DataFrame, vendors: pd.DataFrame) -> None:
         st.slider("High risk threshold", 40, 80, 58)
     with c2:
         st.selectbox("Default payment scrutiny", ["Balanced", "Strict", "Maximum"], index=1)
-        st.selectbox("Model profile", ["ProcureShield RF+IF v3", "Fast Review v2", "Conservative Audit v1"])
+        st.selectbox("Control profile", ["ProcureShield Standard Controls", "Expedited Review", "Conservative Audit"])
     with c3:
         st.selectbox("Notification channel", ["SOC Console", "Email + Teams", "Webhook"])
         st.slider("SLA minutes", 5, 90, 15)
@@ -1713,7 +2288,7 @@ def footer() -> None:
     render_html(
         """
         <div style="margin-top:22px; padding:18px 4px; color:#6f86a2; font-size:12px; font-weight:700;">
-            ProcureShield AI | Connected procurement fraud intelligence | Demo data generated locally
+            ProcureShield | Procurement operations and compliance controls | Demo data generated locally
         </div>
         """
     )
@@ -1736,7 +2311,7 @@ def main() -> None:
         vendor_intelligence_page(df, vendors)
     elif page == "Risk Reports":
         risk_reports_page(df, vendors)
-    elif page == "AI Monitoring Center":
+    elif page == "Risk & Compliance Monitoring":
         ai_monitoring_page(df, vendors)
     elif page == "Audit Logs":
         audit_logs_page(df, vendors)
@@ -1747,5 +2322,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
-
